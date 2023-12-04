@@ -1,10 +1,9 @@
 import re
-from functools import reduce
 from utils import file_parsing
 
 def find_whole_number(string, index):
-     result = re.findall("\d+", string)
-     if len(result)>1 and index >1:
+     result = re.findall("\d+", string[1:])
+     if len(result)>1 and (index >1 or re.match("\d",string[0])):
           return result[1]
      return result[0]
 
@@ -57,15 +56,31 @@ def check_for_gear_matches_above_below(gear, index, data, parts, offset):
         return parts         
     line_to_check = data[index+offset]
     value = None
-    if re.match("\d", line_to_check[gear-1]) or re.match("\d", line_to_check[gear]):
-            value = find_whole_number(line_to_check[max(gear-3,0):gear+3], 0)
+    #dirty hack for the edge case where the gear has two numbers on the same side
+    if re.search("\d+\.\d+", line_to_check[gear-3:gear+4]) and line_to_check[gear]==".":
+        results = re.findall("\d+",line_to_check[gear-3:gear+4])
+        parts.extend(results)
+        return parts
+    if re.match("\d", line_to_check[gear-1]):
+            value = find_whole_number(line_to_check[max(gear-4,0):gear+2], 0)
+    elif re.match("\d", line_to_check[gear]):
+         value=find_whole_number(line_to_check[gear-1:gear+3], 0)
     elif re.match("\d", line_to_check[gear+1]):
-            value = find_whole_number(line_to_check[gear+1:gear+4], 1)
-            
+            value = find_whole_number(line_to_check[gear:gear+4], 1)
     if value:
         parts.append(value)
     return parts
 
+def check_for_gear_matches_left_and_right(gear, index, data, parts):
+     values = []
+     if re.match("\d", data[index][gear-1]):
+          values.append(find_whole_number(data[index][max(gear-4,0): gear],0))
+     if re.match("\d", data[index][gear+1]):
+          values.append(find_whole_number(data[index][gear-1: gear+4],0))
+     parts.extend(values)
+     return parts
+     
+     
 def check_for_matches_above(number, index, data):
     if index==0:
          return number
@@ -86,7 +101,7 @@ def check_for_matches(number, index, data):
 def check_for_gear_matches(gear, index, data):
     parts = []
     parts = check_for_gear_matches_above_below(gear, index, data, parts, -1)
-    # parts = check_for_gear_matches_left_and_right(gear, index, data)
+    parts = check_for_gear_matches_left_and_right(gear, index, data, parts)
     parts = check_for_gear_matches_above_below(gear, index, data, parts, 1)
     return parts
 
@@ -105,19 +120,27 @@ def part_one():
     print(total)
 
 def part_two():
-    path ="day3/input/sample_data.txt"
+    path ="day3/input/full_data.txt"
     data = file_parsing.open_and_read_file(path)
     total = 0
+    
     for index, line in enumerate(data):
-        data[index] = "."+line
+        data[index] = "."+line #dirty hack
     for index, line in enumerate(data):
          processed_line = get_gear_positions(line)
          parts = []
          for gear in processed_line:
               parts = check_for_gear_matches(gear, index, data)
-         if len(parts)>=2:
-            total+= reduce(lambda a, b: int(a)*int(b), parts)
+         if parts and len(parts)==2:
+            total+= int(parts[0])*int(parts[1])
     print(total)
 #part_one()
 
 part_two()
+
+#13720137 is too low
+#22104902 is also too low
+#24628539 still too low
+#27786821 i didn't get a hint w/that
+#23092494 incorrect
+#28502034 incorrect
