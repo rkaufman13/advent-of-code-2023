@@ -131,16 +131,11 @@ def part_two():
          parts = []
          for gear in processed_line:
               parts = check_for_gear_matches(gear, index, data)
-         if parts and len(parts)==2:
-            total+= int(parts[0])*int(parts[1])
+              if parts and len(parts)==2:
+                total+= int(parts[0])*int(parts[1])
+         
     print(total)
-#part_one()
+part_one()
 
 part_two()
 
-#13720137 is too low
-#22104902 is also too low
-#24628539 still too low
-#27786821 i didn't get a hint w/that
-#23092494 incorrect
-#28502034 incorrect
