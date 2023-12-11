@@ -1,6 +1,9 @@
 # Python3 program to find all the reachable nodes
 # for every node present in arr[0..n-1]
-from collections import deque
+from collections import deque, counter
+from utils import file_parsing
+
+
 
 def addEdge(v, w):
 	
@@ -43,6 +46,7 @@ def BFS(componentNum, src):
 				# Assign Component Number to all the
 				# reachable nodes
 				visited[itr] = 1
+				counts = counter(visited)
 				queue.append(itr)
 
 	return reachableNodes
@@ -58,7 +62,7 @@ def displayReachableNodes(m):
 
 def findReachableNodes(arr, n):
 	
-	global V, adj, visited
+	global V, adj, visited, longest_path
 	
 	# Get the number of nodes in the graph
 
@@ -86,27 +90,104 @@ def findReachableNodes(arr, n):
 		# from u, print them by doing a look up in map m.
 		print("Reachable Nodes from ", u, " are")
 		displayReachableNodes(a)
+		return a
 
-# Driver code
-if __name__ == '__main__':
-	
-	V = 7
-	adj = [[] for i in range(V + 1)]
-	visited = [0 for i in range(V + 1)]
-	addEdge(1, 2)
-	addEdge(2, 3)
-	addEdge(3, 4)
-	addEdge(3, 1)
-	addEdge(5, 6)
-	addEdge(5, 7)
-
-	# For every ith element in the arr
-	# find all reachable nodes from query[i]
-	arr = [ 2, 4, 5 ] 
-
-	# Find number of elements in Set
-	n = len(arr)
-
-	findReachableNodes(arr, n)
 
 # This code is contributed by mohit kumar 29
+
+def find_path(graph, start, end):
+    # maintain a queue of paths
+    queue = []
+    # push the first path into the queue
+    queue.append([start])
+    while queue:
+        # get the first path from the queue
+        path = queue.pop(0)
+        # get the last node from the path
+        node = path[-1]
+        # path found
+        if node == end:
+            return path
+        # enumerate all adjacent nodes, construct a
+        # new path and push it into the queue
+        for adjacent in graph[node]:
+            new_path = list(path)
+            new_path.append(adjacent)
+            queue.append(new_path)
+
+
+
+right_symbols = ['-','L','F', 'S']
+left_symbols = ['-','7','J','S']
+up_symbols = ['|','L','J','S']
+down_symbols = ['|','7','F','S']
+
+
+def look_left(col_index, row_index, data):
+	if col_index>0:
+		left_symbol = data[row_index][col_index-1]
+		if left_symbol in right_symbols: #in other words, if "J" is our current symbol, we want to know if the one to the left of it is "facing" right
+					addEdge((row_index*len(data[0])+col_index),row_index*len(data[0])+col_index-1)
+
+
+def look_right(col_index, row_index, data):
+	if col_index<len(data)-1:
+		right_symbol = data[row_index][col_index+1]
+		if right_symbol in left_symbols:
+			addEdge((row_index * len(data[0]) + col_index), row_index * len(data[0]) + col_index + 1)
+
+def look_down(col_index, row_index, data):
+	if row_index<(len(data)-1):
+		lower_symbol = data[row_index+1][col_index]
+		if lower_symbol in up_symbols:
+			addEdge((row_index * len(data[0]) + col_index), row_index * len(data[0]) + col_index + len(data[0]))
+
+
+def look_up(col_index, row_index, data):
+	if row_index>0:
+		upper_symbol = data[row_index-1][col_index]
+		if upper_symbol in down_symbols:
+			addEdge((row_index * len(data[0]) + col_index), row_index * len(data[0]) + col_index - len(data[0]))
+
+def part_one():
+	global adj
+	global visited
+	global longest_path
+	longest_path= 0
+
+	path = "input/sample_data.txt"
+	data = file_parsing.open_and_read_file(path)
+	for i in range(len(data)):
+		data[i] = data[i].replace("\n","")
+
+	V = (len(data) * len(data[0]))
+
+	adj = [[] for i in range(V + 1)]
+	visited = [0 for i in range(V + 1)]
+
+	for row_index, line in enumerate(data):
+		for col_index, character in enumerate(line):
+			if character == "S":
+				start = (row_index * len(data[0]) + col_index)
+			if character in left_symbols:
+				look_left(col_index, row_index, data)
+			if character in right_symbols:
+				look_right(col_index, row_index, data)
+			if character in up_symbols:
+				look_up(col_index, row_index, data)
+			if character in down_symbols:
+				look_down(col_index, row_index, data)
+	for index, edges in enumerate(adj):
+		adj[index] = list(set(edges))
+
+
+	reachable_nodes = findReachableNodes([start],1)
+	length = 0
+	print(reachable_nodes)
+	for reachable_node in reachable_nodes:
+		path_steps = find_path(adj, start, reachable_node)
+		if len(path_steps)>length:
+			length = len(path_steps)
+	print(length-1)
+
+part_one()
