@@ -1,6 +1,6 @@
 # Python3 program to find all the reachable nodes
 # for every node present in arr[0..n-1]
-from collections import deque, counter
+from collections import deque, Counter
 from utils import file_parsing
 
 
@@ -46,7 +46,7 @@ def BFS(componentNum, src):
 				# Assign Component Number to all the
 				# reachable nodes
 				visited[itr] = 1
-				counts = counter(visited)
+				counts = Counter(visited)
 				queue.append(itr)
 
 	return reachableNodes
@@ -155,7 +155,7 @@ def part_one():
 	global longest_path
 	longest_path= 0
 
-	path = "input/sample_data.txt"
+	path = "input/full_data.txt"
 	data = file_parsing.open_and_read_file(path)
 	for i in range(len(data)):
 		data[i] = data[i].replace("\n","")
@@ -183,11 +183,14 @@ def part_one():
 
 	reachable_nodes = findReachableNodes([start],1)
 	length = 0
-	print(reachable_nodes)
-	for reachable_node in reachable_nodes:
-		path_steps = find_path(adj, start, reachable_node)
-		if len(path_steps)>length:
-			length = len(path_steps)
-	print(length-1)
+	print(len(reachable_nodes)/2)
+	# for reachable_node in reachable_nodes:
+	# 	path_steps = find_path(adj, start, reachable_node)
+	# 	if len(path_steps)>length:
+	# 		length = len(path_steps)
+	# print(length-1)
+	# print(reachable_nodes[-1])
+	# path_steps = find_path(adj, start, reachable_nodes[-1])
+	# print(len(path_steps)-1)
 
 part_one()
